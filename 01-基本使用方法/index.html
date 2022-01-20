@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+
+    <title>Web Workers basic example</title>
+
+<!--    <link rel="stylesheet" href="style.css">-->
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<!--<h1>Web<br>Workers<br>basic<br>example</h1>-->
+<!---->
+<div class="controls" tabindex="0">
+    <form>
+        <button id="close">关闭worker</button>
+        <div>
+            <label for="number1">Multiply number 1: </label>
+            <input type="text" id="number1" value="0">
+        </div>
+        <div>
+            <label for="number2">Multiply number 2: </label>
+            <input type="text" id="number2" value="0">
+        </div>
+    </form>
+
+    <p class="result">Result: 0</p>
+</div>
+<script>
+
+    const first = document.querySelector('#number1');
+    const second = document.querySelector('#number2');
+    const close = document.querySelector('#close');
+
+    const result = document.querySelector('.result');
+    let myWorker;
+
+    if (window.Worker) {
+        myWorker = new Worker("worker.js", { name: '123'});
+
+        const inputChange = () => {
+            myWorker.postMessage([first.value, second.value]);
+            console.log('Message posted to worker');
+        };
+
+        const receiveMsg = (e) => {
+            result.textContent = e.data;
+            console.log('Message received from worker');
+        };
+
+        const receiveErr = function(e){
+            console.log(e);
+        };
+
+        const closeWorker = () => {
+            console.log('close');
+            first.removeEventListener('input', inputChange);
+            second.removeEventListener('input', inputChange);
+            myWorker.terminate();
+            myWorker.onmessage = undefined;
+            myWorker.onerror = undefined;
+            myWorker  = undefined;
+
+        };
+
+        first.addEventListener('input', inputChange);
+        second.addEventListener('input', inputChange);
+
+        myWorker.onmessage = receiveMsg;
+        myWorker.onerror = receiveErr;
+
+        // close.addEventListener('click', closeWorker);
+        setTimeout(closeWorker, 10000);
+    } else {
+        console.log('Your browser doesn\'t support web workers.');
+    }
+
+</script>
+</body>
+</html>
